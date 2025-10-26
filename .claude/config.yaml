@@ -1,0 +1,7 @@
+agent_name: claude-code
+role: executor
+project: socialsellers-backend
+language: python
+entry_point: app/main.py
+test_command: pytest -v
+documentation_path: docs/bitacora_proyecto.md
