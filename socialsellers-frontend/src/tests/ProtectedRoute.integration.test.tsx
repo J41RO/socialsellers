@@ -1,16 +1,31 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '../context/AuthContext';
 import ProtectedRoute from '../components/ProtectedRoute';
-import { authAPI } from '../services/api';
 
-vi.mock('../services/api', () => ({
-  authAPI: {
-    login: vi.fn(),
-    getCurrentUser: vi.fn(),
-  },
+// Use vi.hoisted to ensure mocks are available before the mock factory runs
+const mocks = vi.hoisted(() => ({
+  get: vi.fn(),
+  post: vi.fn(),
 }));
+
+vi.mock('axios', () => {
+  return {
+    default: {
+      create: () => ({
+        get: mocks.get,
+        post: mocks.post,
+        put: vi.fn(),
+        delete: vi.fn(),
+        interceptors: {
+          request: { use: vi.fn(() => 0), eject: vi.fn() },
+          response: { use: vi.fn(() => 0), eject: vi.fn() },
+        },
+      }),
+    },
+  };
+});
 
 function AdminPage() {
   return <div>Admin Page</div>;
@@ -31,8 +46,10 @@ describe('ProtectedRoute Integration Tests', () => {
   });
 
   it('redirects to login when not authenticated', async () => {
+    mocks.get.mockRejectedValue(new Error('No token'));
+
     render(
-      <BrowserRouter>
+      <MemoryRouter initialEntries={['/admin']}>
         <AuthProvider>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
@@ -46,12 +63,17 @@ describe('ProtectedRoute Integration Tests', () => {
             />
           </Routes>
         </AuthProvider>
-      </BrowserRouter>
+      </MemoryRouter>
     );
+
+    // Wait for loading to finish and redirect to happen
+    await waitFor(() => {
+      expect(screen.queryByText('Cargando...')).not.toBeInTheDocument();
+    }, { timeout: 3000 });
 
     await waitFor(() => {
       expect(screen.getByText('Login Page')).toBeInTheDocument();
-    });
+    }, { timeout: 3000 });
   });
 
   it('allows access when authenticated', async () => {
@@ -63,12 +85,14 @@ describe('ProtectedRoute Integration Tests', () => {
       activo: true,
     };
 
+    // Mock axios GET request for /auth/me
+    mocks.get.mockResolvedValue({ data: mockUser });
+
     localStorage.setItem('access_token', 'test-token');
     localStorage.setItem('usuario', JSON.stringify(mockUser));
-    (authAPI.getCurrentUser as any).mockResolvedValue(mockUser);
 
     render(
-      <BrowserRouter>
+      <MemoryRouter initialEntries={['/admin']}>
         <AuthProvider>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
@@ -82,12 +106,12 @@ describe('ProtectedRoute Integration Tests', () => {
             />
           </Routes>
         </AuthProvider>
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
-    await waitFor(() => {
-      expect(screen.getByText('Admin Page')).toBeInTheDocument();
-    });
+    // Wait for authentication and page render
+    const adminPage = await screen.findByText('Admin Page', {}, { timeout: 5000 });
+    expect(adminPage).toBeInTheDocument();
   });
 
   it('redirects when role does not match required role', async () => {
@@ -99,12 +123,14 @@ describe('ProtectedRoute Integration Tests', () => {
       activo: true,
     };
 
+    // Mock axios GET request for /auth/me
+    mocks.get.mockResolvedValue({ data: mockUser });
+
     localStorage.setItem('access_token', 'test-token');
     localStorage.setItem('usuario', JSON.stringify(mockUser));
-    (authAPI.getCurrentUser as any).mockResolvedValue(mockUser);
 
     render(
-      <BrowserRouter>
+      <MemoryRouter initialEntries={['/admin']}>
         <AuthProvider>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
@@ -119,11 +145,11 @@ describe('ProtectedRoute Integration Tests', () => {
             />
           </Routes>
         </AuthProvider>
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
-    await waitFor(() => {
-      expect(screen.getByText('Dashboard Page')).toBeInTheDocument();
-    });
+    // Wait for redirect to dashboard
+    const dashboardPage = await screen.findByText('Dashboard Page', {}, { timeout: 5000 });
+    expect(dashboardPage).toBeInTheDocument();
   });
 });
