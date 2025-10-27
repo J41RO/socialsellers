@@ -368,3 +368,81 @@ def calcular_comisiones(db: Session, porcentaje: float = 10.0):
         }
         for r in resultados
     ]
+
+# ======================================
+# SEED DATA para MVP
+# ======================================
+def seed_database(db: Session):
+    """
+    Pobla la base de datos con datos iniciales para MVP
+    Es idempotente: no duplica datos si ya existen
+    """
+    from app.auth import hashear_password
+    from datetime import timedelta
+    import random
+
+    # 1. USUARIOS
+    # Admin
+    if not db.query(models.Usuario).filter(models.Usuario.email == "admin@socialsellers.com").first():
+        admin = models.Usuario(
+            nombre="Admin Demo",
+            email="admin@socialsellers.com",
+            password=hashear_password("admin123"),
+            rol="admin"
+        )
+        db.add(admin)
+
+    # Vendedor
+    if not db.query(models.Usuario).filter(models.Usuario.email == "vendedor@socialsellers.com").first():
+        vendedor = models.Usuario(
+            nombre="Carlos Vendedor",
+            email="vendedor@socialsellers.com",
+            password=hashear_password("vendedor123"),
+            rol="vendedor"
+        )
+        db.add(vendedor)
+
+    db.commit()
+
+    # 2. PRODUCTOS (usando campos correctos del modelo)
+    productos_data = [
+        ("Shampoo Keratina", "Shampoo restaurador con keratina", 12.50, 15),
+        ("Acondicionador Argán", "Acondicionador nutritivo con aceite de argán", 15.00, 20),
+        ("Tratamiento Capilar", "Tratamiento intensivo para cabello dañado", 25.00, 10),
+    ]
+
+    for nombre, desc, precio, stock in productos_data:
+        if not db.query(models.Producto).filter(models.Producto.nombre == nombre).first():
+            producto = models.Producto(
+                nombre=nombre,
+                descripcion=desc,
+                precio=precio,
+                stock=stock,
+                activo=True
+            )
+            db.add(producto)
+
+    db.commit()
+
+    # 3. VENTAS
+    vendedor = db.query(models.Usuario).filter(models.Usuario.rol == "vendedor").first()
+    productos = db.query(models.Producto).all()
+
+    # Solo crear ventas si no existen
+    ventas_existentes = db.query(models.Venta).count()
+    if ventas_existentes == 0 and vendedor and productos:
+        for i in range(5):
+            producto = random.choice(productos)
+            cantidad = random.randint(1, 3)
+            fecha_venta = datetime.now() - timedelta(days=random.randint(1, 30))
+
+            venta = models.Venta(
+                vendedor_id=vendedor.id,
+                producto_id=producto.id,
+                cantidad=cantidad,
+                total=producto.precio * cantidad,
+                fecha=fecha_venta
+            )
+            db.add(venta)
+
+        db.commit()
