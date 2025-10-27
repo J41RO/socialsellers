@@ -32,10 +32,19 @@ def root():
 @app.get("/health")
 def health_check():
     """Health check endpoint para Railway"""
+    import logging
+    logging.info("🏥 HEALTH CHECK REQUEST RECEIVED")
     return {
         "status": "healthy",
         "service": "social-sellers-minimal"
     }
+
+@app.get("/healthz")
+def health_check_alt():
+    """Alternative health check endpoint"""
+    import logging
+    logging.info("🏥 HEALTHZ REQUEST RECEIVED")
+    return {"status": "ok"}
 
 @app.get("/test")
 def test_endpoint():
