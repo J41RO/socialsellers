@@ -1,6 +1,15 @@
-# Social Sellers Backend API
+# Social Sellers MVP - Full Stack Application
 
-API backend para gestión de vendedores sociales - Mesctocker v2
+**Versión: 1.0.0-mvp**
+
+Sistema completo de gestión de vendedores sociales con dashboard interactivo, gestión de inventario, ventas y reportes.
+
+## 🎯 Estado del Proyecto
+
+- ✅ **MVP Completado**
+- ✅ **Tests: Backend 35/35 (100%), Frontend 25/29 (86%)**
+- ✅ **Cobertura: 91%**
+- ✅ **Preparado para deploy público**
 
 ## Stack Tecnológico
 

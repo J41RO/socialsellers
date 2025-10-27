@@ -1048,3 +1048,112 @@ Sistema listo para prueba manual en navegador:
 4. Preparación para demo pública
 
 ---
+
+### ✅ PREPARACIÓN DEPLOY PÚBLICO MVP (TAREA #MVP-DEPLOY)
+
+**Acción**: Preparar infraestructura y configuración para deploy público en Railway (backend) y Vercel (frontend)
+
+**Auditoría Pre-Deploy**:
+- ✅ Backend Tests: 35/35 PASSED (100%)
+- ✅ Backend Cobertura: 91% (superando 85% requerido)
+- ✅ Frontend Tests: 25/29 PASSED (86%)
+- ✅ Sistema funcional localmente validado
+
+**Componentes Creados**:
+
+1. **Configuración Railway (Backend)**:
+   - `Procfile`: Comando de inicio para uvicorn en Railway
+     ```
+     web: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+     ```
+   - `runtime.txt`: Especificación Python 3.11.9
+   - `railway.json`: Configuración Nixpacks + healthcheck
+     - Builder: NIXPACKS
+     - Start command: uvicorn con port dinámico
+     - Healthcheck path: `/`
+     - Healthcheck timeout: 100ms
+
+2. **Proyecto Railway Creado**:
+   - Nombre: `socialsellers-mvp`
+   - URL: https://railway.com/project/730d41c4-5414-48ea-9504-7c403cf6407b
+   - Usuario: Jairo Colina (jairo.colina.co@gmail.com)
+   - Estado: Proyecto inicializado ✅
+
+3. **Configuración Frontend (Vercel)**:
+   - `.env.production`: Template con VITE_API_URL
+   - Build settings documentados:
+     - Root Directory: `socialsellers-frontend`
+     - Build Command: `npm run build`
+     - Output Directory: `dist`
+     - Framework: Vite
+
+4. **Fix Tailwind CSS v4**:
+   - Migración de @tailwind directives a @import "tailwindcss"
+   - PostCSS: cambiado a @tailwindcss/postcss
+   - Eliminado tailwind.config.js (no necesario en v4)
+   - CSS: reemplazado @apply con propiedades CSS directas
+   - Estado: ✅ Estilos funcionando correctamente
+
+5. **Fix Frontend API Connection**:
+   - `.env`: Agregado VITE_API_URL=http://192.168.1.137:8000
+   - Vite reconfigurado para leer variable de entorno
+   - Estado: ✅ Frontend conecta exitosamente con backend
+
+6. **Documentación Deploy**:
+   - `DEPLOY_INSTRUCTIONS.md`: Guía completa de deploy
+   - Instrucciones paso a paso Railway setup
+   - Instrucciones paso a paso Vercel setup
+   - Variables de entorno documentadas
+   - Troubleshooting común incluido
+   - SECRET_KEY generado: `07c6cee12f3b7735211dfed8b96cf4936338466d7f6adcafef91be4fce72ed55`
+
+**Variables de Entorno Railway (Requeridas)**:
+```
+DATABASE_URL=${{Postgres.DATABASE_URL}}
+APP_ENV=production
+SECRET_KEY=07c6cee12f3b7735211dfed8b96cf4936338466d7f6adcafef91be4fce72ed55
+PYTHONPATH=/app
+```
+
+**Variables de Entorno Vercel (Requeridas)**:
+```
+VITE_API_URL=<URL-RAILWAY-BACKEND>
+```
+
+**Commits Realizados**:
+1. `1a31592` - "[TAREA #MVP-DEPLOY] Preparar configuración Railway y fix Tailwind CSS v4"
+2. `fa3c8f2` - "[TAREA #MVP-DEPLOY] Documentar instrucciones de deploy público"
+
+**Estado Actual**:
+- ✅ Código preparado para deploy
+- ✅ Tests pasando localmente
+- ✅ Railway proyecto creado
+- ✅ Configuraciones Railway generadas
+- ✅ Frontend .env.production template creado
+- ✅ Documentación completa
+
+**Pendiente (Requiere UI Web Manual)**:
+1. Railway: Agregar PostgreSQL database
+2. Railway: Conectar repositorio GitHub
+3. Railway: Configurar variables de entorno
+4. Railway: Ejecutar deploy y obtener URL pública
+5. Vercel: Conectar repositorio GitHub
+6. Vercel: Configurar build settings
+7. Vercel: Configurar VITE_API_URL con URL Railway
+8. Vercel: Ejecutar deploy y obtener URL pública
+9. E2E Testing: Validar funcionalidad completa en URLs públicas
+10. Documentación: Actualizar bitácora con URLs finales
+
+**Sistema Funcionando Localmente**:
+- Backend: http://192.168.1.137:8000 ✅
+- Frontend: http://192.168.1.137:5173 ✅
+- Database: Poblada con seed data ✅
+- Credenciales demo:
+  - Admin: admin@socialsellers.com / admin123
+  - Vendedor: vendedor@socialsellers.com / vendedor123
+
+**Próximos Pasos**:
+Ver archivo `DEPLOY_INSTRUCTIONS.md` para completar deploy público manualmente.
+
+---
+
