@@ -32,12 +32,12 @@ def root():
     return {"mensaje": "API Social Sellers activa"}
 
 # Routers
-# from app.routers import sellers, auth, admin, productos, ventas, reportes, notificaciones
-# app.include_router(sellers.router)
-# app.include_router(auth.router)
-# app.include_router(admin.router)
-# app.include_router(productos.router)
-# app.include_router(ventas.router)
-# app.include_router(reportes.router)
-# app.include_router(reportes.comisiones_router)
-# app.include_router(notificaciones.router)
+from app.routers import sellers, auth, admin, productos, ventas, reportes, notificaciones
+app.include_router(sellers.router)
+app.include_router(auth.router)
+app.include_router(admin.router)
+app.include_router(productos.router)
+app.include_router(ventas.router)
+app.include_router(reportes.router)
+app.include_router(reportes.comisiones_router)
+app.include_router(notificaciones.router)
