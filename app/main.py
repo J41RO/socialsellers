@@ -4,11 +4,12 @@ Entry point para la API de vendedores sociales
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.database import engine, Base
-from app import models
+# from app.database import engine, Base
+# from app import models
 
-# Crear tablas en la base de datos
-Base.metadata.create_all(bind=engine)
+# NOTA: Base.metadata.create_all() removido intencionalmente
+# Usamos Alembic para migraciones de base de datos
+# Ejecutar: alembic upgrade head
 
 app = FastAPI(
     title="Social Sellers API",
