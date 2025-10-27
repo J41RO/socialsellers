@@ -27,5 +27,8 @@ COPY . .
 # Exponer puerto (Railway usa la variable $PORT)
 EXPOSE 8080
 
+# Asegurar que start.sh tenga permisos de ejecución
+RUN chmod +x start.sh
+
 # Comando de inicio
-CMD ["./start.sh"]
+CMD /bin/bash start.sh
