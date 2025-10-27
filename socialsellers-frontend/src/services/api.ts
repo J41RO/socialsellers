@@ -9,6 +9,8 @@ import type {
   VentaCreate,
   RankingVendedor,
   MetricasGenerales,
+  Notificacion,
+  NotificacionTest,
 } from '../types';
 
 // URL de la API - se puede configurar con variable de entorno
@@ -177,6 +179,23 @@ export const reportesAPI = {
       responseType: 'blob',
     });
     return data;
+  },
+};
+
+// Notificaciones
+export const notificacionesAPI = {
+  getAll: async (): Promise<Notificacion[]> => {
+    const { data } = await api.get<Notificacion[]>('/notificaciones');
+    return data;
+  },
+
+  test: async (): Promise<NotificacionTest> => {
+    const { data } = await api.post<NotificacionTest>('/notificaciones/test');
+    return data;
+  },
+
+  marcarComoLeida: async (id: number): Promise<void> => {
+    await api.patch(`/notificaciones/${id}/leida`);
   },
 };
 

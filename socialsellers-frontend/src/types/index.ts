@@ -76,3 +76,18 @@ export interface MetricasGenerales {
   ventas_mes_actual: number;
   comisiones_mes_actual: number;
 }
+
+export interface Notificacion {
+  id: number;
+  usuario_id: number;
+  tipo: 'stock_bajo' | 'venta_exitosa' | 'meta_alcanzada';
+  mensaje: string;
+  leida: boolean;
+  fecha_creacion: string;
+}
+
+export interface NotificacionTest {
+  email_sent: boolean;
+  whatsapp_sent: boolean;
+  mensaje: string;
+}

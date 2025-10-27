@@ -2,16 +2,19 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { reportesAPI, ventasAPI } from '../services/api';
-import type { MetricasGenerales, Venta } from '../types';
+import Button from '../components/ui/Button';
+import { reportesAPI, ventasAPI, notificacionesAPI } from '../services/api';
+import type { MetricasGenerales, Venta, NotificacionTest } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { DollarSign, TrendingUp, Package, AlertTriangle } from 'lucide-react';
+import { DollarSign, TrendingUp, Package, AlertTriangle, Bell } from 'lucide-react';
 
 export default function Dashboard() {
   const { usuario } = useAuth();
   const [metricas, setMetricas] = useState<MetricasGenerales | null>(null);
   const [ventasRecientes, setVentasRecientes] = useState<Venta[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [testResult, setTestResult] = useState<NotificacionTest | null>(null);
+  const [testLoading, setTestLoading] = useState(false);
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -47,6 +50,24 @@ export default function Dashboard() {
     }
     return acc;
   }, []);
+
+  const handleTestNotificaciones = async () => {
+    setTestLoading(true);
+    setTestResult(null);
+    try {
+      const result = await notificacionesAPI.test();
+      setTestResult(result);
+    } catch (error) {
+      console.error('Error al probar notificaciones:', error);
+      setTestResult({
+        email_sent: false,
+        whatsapp_sent: false,
+        mensaje: 'Error al enviar notificaciones de prueba',
+      });
+    } finally {
+      setTestLoading(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -156,6 +177,57 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Centro de Notificaciones */}
+        {usuario?.rol === 'admin' && (
+          <Card className="mb-6">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Bell className="h-5 w-5 text-blue-600" />
+                <CardTitle>Centro de Notificaciones</CardTitle>
+              </div>
+              <Button
+                onClick={handleTestNotificaciones}
+                disabled={testLoading}
+                variant="outline"
+                size="sm"
+              >
+                {testLoading ? 'Enviando...' : 'Probar Notificaciones'}
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {testResult && (
+                <div className={`p-4 rounded-md ${
+                  testResult.email_sent && testResult.whatsapp_sent
+                    ? 'bg-green-50 border border-green-200'
+                    : 'bg-yellow-50 border border-yellow-200'
+                }`}>
+                  <p className="font-medium mb-2">{testResult.mensaje}</p>
+                  <div className="text-sm space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className={testResult.email_sent ? 'text-green-600' : 'text-red-600'}>
+                        {testResult.email_sent ? '✓' : '✗'}
+                      </span>
+                      <span>Email {testResult.email_sent ? 'enviado' : 'no enviado'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={testResult.whatsapp_sent ? 'text-green-600' : 'text-red-600'}>
+                        {testResult.whatsapp_sent ? '✓' : '✗'}
+                      </span>
+                      <span>WhatsApp {testResult.whatsapp_sent ? 'enviado' : 'no enviado'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {!testResult && (
+                <p className="text-sm text-gray-600">
+                  Sistema de notificaciones automáticas activo.
+                  Haz clic en "Probar Notificaciones" para verificar el envío de alertas.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Ventas recientes */}
         <Card>
