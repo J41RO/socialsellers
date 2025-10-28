@@ -2,7 +2,7 @@
 Social Sellers Backend - FastAPI Application
 Entry point para la API de vendedores sociales
 """
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 # from app.database import engine, Base
 # from app import models
@@ -25,6 +25,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Middleware de seguridad
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    """Agrega headers de seguridad a todas las respuestas"""
+    response = await call_next(request)
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Content-Type"] = "application/json; charset=utf-8"
+    return response
 
 @app.get("/")
 def root():
