@@ -12,6 +12,47 @@ router = APIRouter(
     tags=["ventas"]
 )
 
+@router.post("", response_model=schemas.VentaResponse, status_code=status.HTTP_201_CREATED)
+def crear_venta_desde_admin(
+    venta: schemas.VentaCrearAdmin,
+    db: Session = Depends(get_db),
+    usuario_actual = Depends(auth.rol_requerido(["admin"]))
+):
+    """
+    Crea una nueva venta especificando vendedor y precio (solo admin)
+
+    Requiere autenticación con rol 'admin'
+
+    Permite al admin crear ventas para cualquier vendedor con precio personalizado
+
+    Args:
+        venta: Datos de la venta (producto_id, vendedor_id, cantidad, precio_unitario)
+        db: Sesión de base de datos
+        usuario_actual: Usuario autenticado (debe ser admin)
+
+    Returns:
+        Venta creada con total calculado
+
+    Raises:
+        HTTPException 400: Si la cantidad es inválida
+        HTTPException 404: Si el producto o vendedor no existen
+    """
+    try:
+        nueva_venta = crud.crear_venta_admin(db=db, venta=venta)
+        return nueva_venta
+    except ValueError as e:
+        error_msg = str(e)
+        if "no encontrado" in error_msg or "no existe" in error_msg:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=error_msg
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=error_msg
+            )
+
 @router.post("/registrar", response_model=schemas.VentaResponse, status_code=status.HTTP_201_CREATED)
 def registrar_venta(
     venta: schemas.VentaCrear,

@@ -2,7 +2,7 @@
 Schemas Pydantic v2
 Validación y serialización de datos
 """
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, field_validator
 from datetime import datetime
 
 class VendedorBase(BaseModel):
@@ -87,8 +87,22 @@ class VentaBase(BaseModel):
     cantidad: int = 1
 
 class VentaCrear(VentaBase):
-    """Schema para creación de venta"""
+    """Schema para creación de venta (vendedor autenticado)"""
     pass
+
+class VentaCrearAdmin(BaseModel):
+    """Schema para creación de venta por admin (especifica vendedor_id y precio_unitario)"""
+    producto_id: int
+    vendedor_id: int
+    cantidad: int = 1
+    precio_unitario: float
+
+    @field_validator('cantidad')
+    @classmethod
+    def validar_cantidad(cls, v):
+        if v <= 0:
+            raise ValueError('La cantidad debe ser mayor que 0')
+        return v
 
 class VentaResponse(BaseModel):
     """Schema para respuesta de venta"""

@@ -187,6 +187,47 @@ def crear_venta(db: Session, venta: schemas.VentaCrear, vendedor_id: int):
     db.refresh(db_venta)
     return db_venta
 
+def crear_venta_admin(db: Session, venta: schemas.VentaCrearAdmin):
+    """
+    Crea una nueva venta como admin (especifica vendedor_id y precio_unitario)
+
+    Valida que producto y vendedor existan
+
+    Args:
+        db: Sesión de base de datos
+        venta: Datos de la venta (incluye vendedor_id y precio_unitario)
+
+    Returns:
+        Venta creada
+
+    Raises:
+        ValueError: Si el producto o vendedor no existen
+    """
+    # Validar que producto existe
+    producto = obtener_producto_por_id(db, venta.producto_id)
+    if producto is None:
+        raise ValueError("Producto no encontrado")
+
+    # Validar que vendedor existe
+    vendedor = db.query(models.Usuario).filter(models.Usuario.id == venta.vendedor_id).first()
+    if vendedor is None:
+        raise ValueError("Vendedor no encontrado")
+
+    # Calcular total usando precio_unitario especificado
+    total = venta.precio_unitario * venta.cantidad
+
+    # Crear venta
+    db_venta = models.Venta(
+        producto_id=venta.producto_id,
+        vendedor_id=venta.vendedor_id,
+        cantidad=venta.cantidad,
+        total=total
+    )
+    db.add(db_venta)
+    db.commit()
+    db.refresh(db_venta)
+    return db_venta
+
 def listar_ventas(db: Session):
     """
     Lista todas las ventas del sistema
