@@ -53,11 +53,11 @@ api.interceptors.response.use(
 // Autenticación
 export const authAPI = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const formData = new FormData();
-    formData.append('username', credentials.email);
-    formData.append('password', credentials.password);
-    const { data } = await api.post<AuthResponse>('/auth/login', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    const params = new URLSearchParams();
+    params.append('username', credentials.email);
+    params.append('password', credentials.password);
+    const { data } = await api.post<AuthResponse>('/auth/login', params, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     });
     return data;
   },
