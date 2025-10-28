@@ -11,15 +11,15 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Redirigir automáticamente cuando el usuario se autentica
+  // Redirigir si ya está autenticado (ej: recarga de página)
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !authLoading) {
       navigate('/dashboard', { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, authLoading, navigate]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -28,8 +28,8 @@ export default function Login() {
 
     try {
       await login({ email, password });
-      // La redirección se maneja automáticamente por el useEffect
-      // Nota: isLoading se mantiene en true hasta que el useEffect redirija
+      // Redirigir inmediatamente después del login exitoso
+      navigate('/dashboard', { replace: true });
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Error al iniciar sesión');
       setIsLoading(false);
