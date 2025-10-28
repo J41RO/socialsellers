@@ -48,7 +48,7 @@ def registrar_usuario(
 
     return nuevo_usuario
 
-@router.post("/login", response_model=schemas.Token)
+@router.post("/login", response_model=schemas.TokenWithUser)
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
@@ -61,7 +61,7 @@ def login(
         db: Sesión de base de datos
 
     Returns:
-        Token JWT
+        Token JWT con datos del usuario
 
     Raises:
         HTTPException: Si las credenciales son incorrectas
@@ -83,7 +83,11 @@ def login(
         expires_delta=access_token_expires
     )
 
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "usuario": usuario
+    }
 
 @router.get("/me", response_model=schemas.UsuarioResponse)
 async def obtener_usuario_actual(
