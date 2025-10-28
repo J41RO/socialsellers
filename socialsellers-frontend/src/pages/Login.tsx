@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -11,8 +11,15 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  // Redirigir automáticamente cuando el usuario se autentica
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -21,10 +28,9 @@ export default function Login() {
 
     try {
       await login({ email, password });
-      navigate('/dashboard');
+      // La redirección se maneja automáticamente por el useEffect
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Error al iniciar sesión');
-    } finally {
       setIsLoading(false);
     }
   };
