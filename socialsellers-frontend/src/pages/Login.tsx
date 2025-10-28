@@ -29,6 +29,7 @@ export default function Login() {
     try {
       await login({ email, password });
       // La redirección se maneja automáticamente por el useEffect
+      // Nota: isLoading se mantiene en true hasta que el useEffect redirija
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Error al iniciar sesión');
       setIsLoading(false);
