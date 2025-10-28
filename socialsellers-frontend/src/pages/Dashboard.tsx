@@ -3,10 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import ModalNuevaVenta from '../components/ModalNuevaVenta';
 import { reportesAPI, ventasAPI, notificacionesAPI } from '../services/api';
 import type { MetricasGenerales, Venta, NotificacionTest } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { DollarSign, TrendingUp, Package, AlertTriangle, Bell } from 'lucide-react';
+import { DollarSign, TrendingUp, Package, AlertTriangle, Bell, Plus } from 'lucide-react';
 
 export default function Dashboard() {
   const { usuario } = useAuth();
@@ -15,6 +16,7 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [testResult, setTestResult] = useState<NotificacionTest | null>(null);
   const [testLoading, setTestLoading] = useState(false);
+  const [showModalNuevaVenta, setShowModalNuevaVenta] = useState(false);
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -69,6 +71,26 @@ export default function Dashboard() {
     }
   };
 
+  const refrescarDatos = async () => {
+    setIsLoading(true);
+    try {
+      if (usuario?.rol === 'admin') {
+        const metricasData = await reportesAPI.getMetricas();
+        setMetricas(metricasData);
+      }
+
+      const ventasData = usuario?.rol === 'admin'
+        ? await ventasAPI.getAll()
+        : await ventasAPI.getByVendedor(usuario?.id || 0);
+
+      setVentasRecientes(ventasData.slice(-10));
+    } catch (error) {
+      console.error('Error al refrescar datos:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <Layout>
@@ -82,9 +104,17 @@ export default function Dashboard() {
   return (
     <Layout>
       <div className="px-4 sm:px-0">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          Bienvenido, {usuario?.nombre}
-        </h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">
+            Bienvenido, {usuario?.nombre}
+          </h2>
+          {usuario?.rol === 'admin' && (
+            <Button onClick={() => setShowModalNuevaVenta(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Registrar Venta
+            </Button>
+          )}
+        </div>
 
         {/* Métricas principales (solo admin) */}
         {usuario?.rol === 'admin' && metricas && (
@@ -266,6 +296,13 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modal Nueva Venta */}
+      <ModalNuevaVenta
+        isOpen={showModalNuevaVenta}
+        onClose={() => setShowModalNuevaVenta(false)}
+        onSuccess={refrescarDatos}
+      />
     </Layout>
   );
 }

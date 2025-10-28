@@ -144,6 +144,16 @@ export const ventasAPI = {
     return data;
   },
 
+  createAdmin: async (venta: {
+    producto_id: number;
+    vendedor_id: number;
+    cantidad: number;
+    precio_unitario: number;
+  }): Promise<Venta> => {
+    const { data } = await api.post<Venta>('/ventas', venta);
+    return data;
+  },
+
   getByVendedor: async (vendedorId: number): Promise<Venta[]> => {
     const { data } = await api.get<Venta[]>(`/ventas/vendedor/${vendedorId}`);
     return data;
